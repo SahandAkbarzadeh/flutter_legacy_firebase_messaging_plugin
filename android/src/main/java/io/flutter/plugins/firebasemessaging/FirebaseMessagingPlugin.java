@@ -15,8 +15,8 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
 import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.RemoteMessage;
 import io.flutter.plugin.common.MethodCall;
@@ -49,8 +49,8 @@ public class FirebaseMessagingPlugin extends BroadcastReceiver
   private FirebaseMessagingPlugin(Registrar registrar, MethodChannel channel) {
     this.registrar = registrar;
     this.channel = channel;
-    FirebaseApp.initializeApp(registrar.context());
-
+    Log.d(TAG, "FirebaseMessagingPlugin: " + FirebaseApp.getApps(registrar.context()).toString());
+    Log.d(TAG, "FirebaseMessagingPlugin: " + FirebaseInstanceId.getInstance().getToken());
     IntentFilter intentFilter = new IntentFilter();
     intentFilter.addAction(FlutterFirebaseInstanceIDService.ACTION_TOKEN);
     intentFilter.addAction(FlutterFirebaseMessagingService.ACTION_REMOTE_MESSAGE);
@@ -114,21 +114,14 @@ public class FirebaseMessagingPlugin extends BroadcastReceiver
       FirebaseMessaging.getInstance().unsubscribeFromTopic(topic);
       result.success(null);
     } else if ("getToken".equals(call.method)) {
-      FirebaseInstanceId.getInstance()
-          .getInstanceId()
-          .addOnCompleteListener(
-              new OnCompleteListener<InstanceIdResult>() {
-                @Override
-                public void onComplete(@NonNull Task<InstanceIdResult> task) {
-                  if (!task.isSuccessful()) {
-                    Log.w(TAG, "getToken, error fetching instanceID: ", task.getException());
-                    result.success(null);
-                    return;
-                  }
+      final String token = FirebaseInstanceId.getInstance().getToken();
+      if (token != null && !token.trim().equals("")) {
+        result.success(token);
+      } else {
+        Log.w(TAG, "getToken, error fetching instanceID ");
+        result.success(null);
+      }
 
-                  result.success(task.getResult().getToken());
-                }
-              });
     } else if ("deleteInstanceID".equals(call.method)) {
       new Thread(
               new Runnable() {
@@ -145,10 +138,10 @@ public class FirebaseMessagingPlugin extends BroadcastReceiver
               })
           .start();
     } else if ("autoInitEnabled".equals(call.method)) {
-      result.success(FirebaseMessaging.getInstance().isAutoInitEnabled());
+      result.success(false);
     } else if ("setAutoInitEnabled".equals(call.method)) {
       Boolean isEnabled = (Boolean) call.arguments();
-      FirebaseMessaging.getInstance().setAutoInitEnabled(isEnabled);
+//      FirebaseMessaging.getInstance().setAutoInitEnabled(isEnabled);
       result.success(null);
     } else {
       result.notImplemented();
