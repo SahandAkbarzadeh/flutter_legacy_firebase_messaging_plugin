@@ -13,6 +13,13 @@ For Flutter plugins for other Firebase products, see [FlutterFire.md](https://gi
 ## Usage
 To use this plugin, add `firebase_messaging` as a [dependency in your pubspec.yaml file](https://flutter.io/platform-plugins/).
 
+```yaml
+firebase_messaging:
+    git:
+      url: https://github.com/SahandAkbarzadeh/flutter_legacy_firebase_messaging_plugin.git
+      ref: master
+```
+
 ## Getting Started
 
 Check out the `example` directory for a sample app using Firebase Cloud Messaging.
